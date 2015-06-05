@@ -1,5 +1,6 @@
 import sublime, sublime_plugin
 import winreg, subprocess
+import re
 from os import path
 
 CONEMU  = "C:\\Program Files\\ConEmu\\ConEmu64.exe"
@@ -48,9 +49,11 @@ class ConemuScriptCommand(sublime_plugin.TextCommand):
       else:
          script = self.view.substr(sublime.Region(0, self.view.size()))
 
+      script = re.sub(r'\\', r'\\\\', script)
+
       # Use PSReadline KillLine hotkey
       subprocess.call([CONEMUC, "-GUIMACRO:0", "KEYS", "Home", "^k"], startupinfo=si)
-      subprocess.call([CONEMUC, "-GUIMACRO:0", "PASTE", "2", script + "\n"], startupinfo=si)
+      subprocess.call([CONEMUC, "-GUIMACRO:0", "PASTE", "2", script + "\\n"], startupinfo=si)
       # Use PSReadline Yank hotkey
       subprocess.call([CONEMUC, "-GUIMACRO:0", "KEYS", "End", "^i"], startupinfo=si)
       subprocess.call([CONEMU, "-SHOWHIDE"], startupinfo=si)
@@ -68,9 +71,12 @@ class ConemuSelectionCommand(sublime_plugin.TextCommand):
          else:
             script += [self.view.substr(region)]
 
+      script = "\n".join(script) + "\n"
+      script = re.sub(r'\\', r'\\\\', script)
+
       # Use PSReadline KillLine hotkey
       subprocess.call([CONEMUC, "-GUIMACRO:0", "KEYS", "Home", "^k"], startupinfo=si)
-      subprocess.call([CONEMUC, "-GUIMACRO:0", "PASTE", "2", "\n".join(script) + "\n"], startupinfo=si)
+      subprocess.call([CONEMUC, "-GUIMACRO:0", "PASTE", "2", script], startupinfo=si)
       # Use PSReadline Yank hotkey
       subprocess.call([CONEMUC, "-GUIMACRO:0", "KEYS", "End", "^i"], startupinfo=si)
       subprocess.call([CONEMU, "-SHOWHIDE"], startupinfo=si)
